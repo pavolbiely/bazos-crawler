@@ -1,0 +1,7 @@
+[PHP]
+extension_dir = "./ext"
+extension=php_curl.dll
+extension=php_tidy.dll
+
+[Zend]
+zend_extension="php_xdebug.dll"
