@@ -11,6 +11,11 @@ class AdvertismentDetails
 
 	/** @var array */
 	protected $images;
+
+	public function expose()
+	{
+		return get_object_vars($this);
+	}
 	
 	public function setDescription(string $description): AdvertismentDetails
 	{

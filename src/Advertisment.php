@@ -53,6 +53,13 @@ class Advertisment
 		$this->id = $id;
 	}
 
+	public function expose()
+	{
+		$vars = get_object_vars($this);
+		$vars['details'] = $this->details->expose();
+		return $vars;
+	}
+
 	public function getId(): int
 	{
 		return $this->id;
