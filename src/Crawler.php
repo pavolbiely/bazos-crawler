@@ -79,7 +79,7 @@ class Crawler
 			$xml = $this->convertHtmlToXml($url . ($page > 0 ? '/' . ($page * 20) . '/' : NULL));
 
 			$counter = 0;
-			foreach ($xml->body->div->table[1]->tr->td[1]->table as $node) {
+			foreach ($xml->body->div->table[0]->tr->td[1]->table as $node) {
 				if ($counter++ < 2) {
 					continue;
 				}
