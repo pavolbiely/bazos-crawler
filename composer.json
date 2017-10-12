@@ -14,6 +14,7 @@
         "php": ">=7.1",
         "ext-tidy": "*",
         "ext-curl": "*",
+        "ext-xml": "*",
         "nette/tester": "1.7.x"
     },
     "autoload": {
