@@ -63,7 +63,7 @@ class Crawler
 	/**
 	 * @return Advertisment[]
 	 */
-	public function crawlAds(string $url, int $pages = 1): array
+	public function crawlAds(string $url, int $pages = 1, bool $downloadDetails = false): array
 	{
 		if (!$purl = @parse_url($url)) {
 			throw new CrawlerException('Invalid URL');
@@ -89,7 +89,7 @@ class Crawler
 				preg_match('~\[(.+)\]~i', (string)$node->tr[0]->td[0]->span[1], $matches3);
 				$locality = explode("\n", trim((string)$node->tr[0]->td[2]));
 
-				$items[] = (new Advertisment((int) $matches1[1]))
+				$item = (new Advertisment((int) $matches1[1]))
 					->setTitle(str_replace("\n", " ", trim((string)$node->tr[0]->td[0]->span[0]->a)))
 					->setDate(new \DateTime($matches3[1]))
 					->setLink('https://' . parse_url($url, PHP_URL_HOST) . trim((string)$node->tr[0]->td[0]->a['href']))
@@ -102,10 +102,29 @@ class Crawler
 					->setEmail((int) $matches2[1])
 					->setPhone((string) $matches2[2])
 					->setAuthor(str_replace("\n", " ", (string) $matches2[3]));
+
+				if ($downloadDetails) {
+					downloadDetails($item);
+				}
+				$items[] = $item;
 			}
 		}
 
 		return $items;
+	}
+
+	public function downloadDetails(Advertisment &$item): \Bazos\AdvertismentDetails
+	{
+		$xml = $this->convertHtmlToXml($item->getLink());
+		$details = new AdvertismentDetails;
+		$details->setDescription((string)$xml->body->div->table->tr->td[1]->table[1]->tr[1]->td->div);
+		$images = [];
+		foreach($xml->body->div->table->tr->td[1]->table[1]->tr[0]->td[1]->a as $node) {
+			$images[] = (string)$node['href'];
+		}
+		$details->setImages($images);
+		$item->setDetails($details);
+		return $details;
 	}
 
 	protected function downloadHtmlPage(string $url): string

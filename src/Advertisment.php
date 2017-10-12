@@ -45,6 +45,9 @@ class Advertisment
 	/** @var string */
 	protected $author;
 
+	/** @var \Bazos\AdvertismentDetails */
+	protected $details;
+
 	public function __construct(int $id)
 	{
 		$this->id = $id;
@@ -185,5 +188,16 @@ class Advertisment
 	public function getAuthor(): string
 	{
 		return $this->author;
+	}
+
+	public function setDetails(\Bazos\AdvertismentDetails $details): Advertisment
+	{
+		$this->details = $details;
+		return $this;
+	}
+
+	public function getDetails(): \Bazos\AdvertismentDetails
+	{
+		return $this->details;
 	}
 }
