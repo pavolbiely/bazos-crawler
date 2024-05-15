@@ -8,6 +8,7 @@ class Crawler
 {
 	const URL_SK = 'https://www.bazos.sk';
 	const URL_CZ = 'https://www.bazos.cz';
+	const URL_PL = 'https://www.bazos.pl';
 	const URL_AT = 'https://www.bazos.at';
 
 	/**
@@ -15,7 +16,7 @@ class Crawler
 	 */
 	public function crawlCategories(string $url): array
 	{
-		if (!in_array($url, [self::URL_SK, self::URL_CZ, self::URL_AT])) {
+		if (!in_array($url, [self::URL_SK, self::URL_CZ, self::URL_PL, self::URL_AT])) {
 			throw new CrawlerException('Invalid URL');
 		}
 
@@ -69,7 +70,7 @@ class Crawler
 			throw new CrawlerException('Invalid URL');
 		}
 
-		if (!(isset($purl['host']) && preg_match('~bazos\.(sk|cz|at)~', $purl['host']))) {
+		if (!(isset($purl['host']) && preg_match('~bazos\.(sk|cz|pl|at)~', $purl['host']))) {
 			throw new CrawlerException('Invalid URL - only bazos domains are valid');
 		}
 
@@ -79,28 +80,34 @@ class Crawler
 			$xml = $this->convertHtmlToXml($url . ($page > 0 ? '/' . ($page * 20) . '/' : NULL));
 
 			$counter = 0;
-			foreach ($xml->body->div->table[1]->tr->td[1]->table as $node) {
-				if ($counter++ < 2) {
+			foreach ($xml->body->div->div[2]->div[1]->div as $node) {
+				if ($counter++ < 3) {
 					continue;
 				}
 
-				preg_match('~inzerat\/(\d+)\/~i', (string)$node->tr[0]->td[0]->span[0]->a['href'], $matches1);
-				preg_match('~hodnotenie\.php\?mail=([^&]*)&telefon=([^&]*)&jmeno=([^"]*)"~i', (string)$node->tr[1]->td->script, $matches2);
-				preg_match('~\[(.+)\]~i', (string)$node->tr[0]->td[0]->span[1], $matches3);
-				$locality = explode("\n", trim((string)$node->tr[0]->td[2]));
+                try {
+                    if (!preg_match('~inzerat\/(\d+)\/~i', @(string)$node->div[0]->a[0]['href'], $matches1) ||
+				    !preg_match('~\'rating\',\'(\d+)\',\'(\d+)\',\'(.+?)\'\)~i', (string)$node->div[4]->span[2]['onclick'], $matches2) ||
+                        !preg_match('~\[(.+)\]~i', @(string)$node->div[0]->span, $matches3)) {
+                        continue;
+                    }
+                } catch (\Exception $e) {
+                    continue;
+                }
+				$locality = explode("\n", trim((string)$node->div[2]));
 
 				$items[] = (new Advertisment((int) $matches1[1]))
-					->setTitle(str_replace("\n", " ", trim((string)$node->tr[0]->td[0]->span[0]->a)))
+					->setTitle(str_replace("\n", " ", trim((string)$node->div[0]->h2->a)))
 					->setDate(new \DateTime($matches3[1]))
-					->setLink('https://' . parse_url($url, PHP_URL_HOST) . trim((string)$node->tr[0]->td[0]->a['href']))
-					->setImg(trim((string)$node->tr[0]->td[0]->a->img['src']))
-					->setText(str_replace("\n", " ", trim((string)$node->tr[0]->td[0]->div)))
-					->setPrice((float) str_replace([" ",","," €"], [NULL,".",NULL], (string)$node->tr[0]->td[1]->span))
+					->setLink('https://' . parse_url($url, PHP_URL_HOST) . trim((string)$node->div[0]->a[0]['href']))
+					->setImg(trim((string)$node->div[0]->a->img['src']))
+					->setText(str_replace("\n", " ", trim((string)$node->div[0]->div)))
+					->setPrice((float) str_replace([" ",","," €"], [NULL,".",NULL], (string)$node->div[1]->b))
 					->setCity($locality[0])
 					->setPostcode($locality[1] ?? "")
-					->setViews((int) trim((string)(int)$node->tr[0]->td[3]))
+					->setViews((int)$node->div[3])
 					->setEmail((int) $matches2[1])
-					->setPhone((string) $matches2[2])
+					->setPhone($matches2[2])
 					->setAuthor(str_replace("\n", " ", (string) $matches2[3]));
 			}
 		}
