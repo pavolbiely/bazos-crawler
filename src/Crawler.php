@@ -84,16 +84,11 @@ class Crawler
 				if ($counter++ < 3) {
 					continue;
 				}
-
-                try {
-                    if (!preg_match('~inzerat\/(\d+)\/~i', @(string)$node->div[0]->a[0]['href'], $matches1) ||
+				if (!preg_match('~inzerat\/(\d+)\/~i', @(string)$node->div[0]->a[0]['href'], $matches1) ||
 				    !preg_match('~\'rating\',\'(\d+)\',\'(\d+)\',\'(.+?)\'\)~i', (string)$node->div[4]->span[2]['onclick'], $matches2) ||
-                        !preg_match('~\[(.+)\]~i', @(string)$node->div[0]->span, $matches3)) {
-                        continue;
-                    }
-                } catch (\Exception $e) {
-                    continue;
-                }
+                        	    !preg_match('~\[(.+)\]~i', @(string)$node->div[0]->span, $matches3)) {
+				    continue;
+				}
 				$locality = explode("\n", trim((string)$node->div[2]));
 
 				$items[] = (new Advertisment((int) $matches1[1]))
