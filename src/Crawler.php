@@ -85,7 +85,7 @@ class Crawler
 					continue;
 				}
 				if (!preg_match('~inzerat\/(\d+)\/~i', @(string)$node->div[0]->a[0]['href'], $matches1) ||
-				    !preg_match('~\'rating\',\'(\d+)\',\'(\d+)\',\'(.+?)\'\)~i', (string)$node->div[4]->span[2]['onclick'], $matches2) ||
+				    !preg_match('~\'rating\',\'(\d+)\',\'(\d+)\',\'(.+?)\'\)~i', @(string)$node->div[4]->span[2]['onclick'], $matches2) ||
                         	    !preg_match('~\[(.+)\]~i', @(string)$node->div[0]->span, $matches3)) {
 				    continue;
 				}
